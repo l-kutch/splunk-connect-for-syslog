@@ -83,11 +83,6 @@ COPY etc/conf.d /opt/syslog-ng/etc/conf.d
 COPY etc/context-local /opt/syslog-ng/etc/context-local
 COPY sbin/entrypoint.sh /sbin/entrypoint.sh
 
-RUN mkdir -p /opt/syslog-ng/var/data/disk-buffer
-RUN source scl_source enable rh-python36 ;/opt/syslog-ng/sbin/syslog-ng  -V
-RUN source scl_source enable rh-python36 ;/opt/syslog-ng/sbin/syslog-ng -t
-RUN mkdir -p /var/log/syslog-ng/data/disk-buffer
-
 EXPOSE 514
 EXPOSE 601/tcp
 EXPOSE 6514/tcp
@@ -119,6 +114,12 @@ ENV SCS_SOURCE_NET_SO_RCVBUF=50000000
 ENV SCS_SOURCE_NET_TCP_MAX_CONNECTIONS=1000
 ENV SCS_SOURCE_NET_TCP_WINDOW_SIZE=20000000
 ENV SCS_SOURCE_NET_TCP_FETCH_LIMIT=20000
+
+RUN mkdir -p /opt/syslog-ng/var/data/disk-buffer
+RUN source scl_source enable rh-python36 ;/opt/syslog-ng/sbin/syslog-ng  -V
+RUN source scl_source enable rh-python36 ;/opt/syslog-ng/sbin/syslog-ng -t
+RUN mkdir -p /var/log/syslog-ng/data/disk-buffer
+
 
 
 ENTRYPOINT ["/sbin/entrypoint.sh", "--"]
