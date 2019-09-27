@@ -1,43 +1,10 @@
-# The following is the dedicated source port declaration for {{ (print .port_id) }}
-# Two log paths will be created -- one for the dedicated port(s) and one for the default (typically port 514)
+# ===============================================================================================
+# Set the parser
+# ===============================================================================================
 
-source s_dedicated_port_{{ .port_id}} {
-    channel {
-        source {
-{{- if ne (getenv  (print "SC4S_LISTEN_" .port_id "_UDP_PORT" ) "no") "no" }}
-            syslog (
-                transport("udp")
-                port({{getenv  (print "SC4S_LISTEN_" .port_id "_UDP_PORT") }})
-                ip-protocol(4)
-                so-rcvbuf({{getenv "SC4S_SOURCE_UDP_SO_RCVBUFF" "425984"}})
-                keep-hostname(yes)
-                keep-timestamp(yes)
-                use-dns(no)
-                use-fqdn(no)
-                chain-hostnames(off)
-                flags(no-parse)
-            );
-{{- end}}
-{{- if ne (getenv  (print "SC4S_LISTEN_" .port_id "_TCP_PORT") "no") "no" }}
-            network (
-                transport("tcp")
-                port({{getenv  (print "SC4S_LISTEN_" .port_id "_TCP_PORT") }})
-                ip-protocol(4)
-                max-connections({{getenv "SC4S_SOURCE_TCP_MAX_CONNECTIONS" "2000"}})
-                log-iw-size({{getenv "SC4S_SOURCE_TCP_IW_SIZE" "20000000"}})
-                log-fetch-limit({{getenv "SC4S_SOURCE_TCP_FETCH_LIMIT" "2000"}})
-                keep-hostname(yes)
-                keep-timestamp(yes)
-                use-dns(no)
-                use-fqdn(no)
-                chain-hostnames(off)
-                flags(no-parse)
-            );
-{{- end}}
-        };
         #TODO: #60 Remove this function with enhancement
         rewrite(set_rfcnonconformant);
-{{ if eq .parser "rfc5424_strict" }}
+{{- if eq .parser "rfc5424_strict" }}
         filter(f_rfc5424_strict);
         parser {
                 syslog-parser(flags(syslog-protocol  store-raw-message));
@@ -82,7 +49,6 @@ source s_dedicated_port_{{ .port_id}} {
         };
 {{- end }}
         rewrite(r_set_splunk_default);
-
-   };
-
-};
+        parser {
+            vendor_product_by_source();
+        };
